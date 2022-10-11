@@ -12,7 +12,7 @@ This document provides basic guide on how to use Meteosource.com Weather API Pos
 * Choose one of the collections you wish to use and set up the parameters
 * Click "Send" to fetch your data
 
-[![Run in Postman](https://run.pstmn.io/button.svg)](https://god.gw.postman.com/run-collection/:a4f2b217-64c1-45d4-8ea5-970f62dea81d)
+[![Run in Postman](https://run.pstmn.io/button.svg)](https://god.gw.postman.com/run-collection/22422475-1eddc629-8d66-4162-9908-90105a798dc9?action=collection%2Ffork&collection-url=entityId%3D22422475-1eddc629-8d66-4162-9908-90105a798dc9%26entityType%3Dcollection%26workspaceId%3Da4f2b217-64c1-45d4-8ea5-970f62dea81d)
 
 ## About Meteosource.com weather API
 
