@@ -1,0 +1,721 @@
+{
+	"info": {
+		"_postman_id": "1eddc629-8d66-4162-9908-90105a798dc9",
+		"name": "Meteosource Weather API",
+		"description": "**Meteosource provides API** for historic, current, and forecast weather data. Weather forecasts are based on cutting-edge machine learning models. The algorithms learn from historical data and forecasts from many different models, compare their data from different places and meteorological situations, and create a single output to provide accurate hyperlocal weather forecasts anywhere in the world.\n\n## Features\n\n*   real-time current weather\n*   minute-by-minute rain forecast\n*   hourly forecast out to 7 days\n*   daily forecast out to 30 days (including text summaries)\n*   average weather statistics and astronomy data\n*   severe weather data in the US, Canada, and EU\n*   historical weather data for up to 8 years in the past\n*   png map layers\n    \n\nUsing this collection, you can easily implement Meteosource JSON data into your website or application.\n\n[Sign up](https://www.meteosource.com/client/sign-up) for free to get your personal API key.",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "22422475"
+	},
+	"item": [
+		{
+			"name": "Get weather data for a single point (geographic name or GPS)",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Accept",
+						"value": "application/json"
+					}
+				],
+				"url": {
+					"raw": "https://meteosource.com/api/v1/{{tier}}/point?place_id=london&lat=&lon=&sections=current,hourly&timezone=&language=en&units=us",
+					"protocol": "https",
+					"host": [
+						"meteosource",
+						"com"
+					],
+					"path": [
+						"api",
+						"v1",
+						"{{tier}}",
+						"point"
+					],
+					"query": [
+						{
+							"key": "place_id",
+							"value": "london",
+							"description": "Identifier of a place. To obtain the `place_id` for the location you want, please use endpoints `/find_places_prefix` (search by prefix) or `/find_places` (search by full name)."
+						},
+						{
+							"key": "lat",
+							"value": "",
+							"description": "Latitude in format 12N, 12.3N, 12.3, or 13S, 13.2S, -13.4"
+						},
+						{
+							"key": "lon",
+							"value": "",
+							"description": "Longitude in format 12E, 12.3E, 12.3, or 13W, 13.2W, -13.4"
+						},
+						{
+							"key": "sections",
+							"value": "current,hourly",
+							"description": "Sections to be included in the response. You can specify more section by separating the values with a comma. The available values are:\n\n* ``current``: Current weather situation\n* ``daily``: Forecasts for each whole day\n* ``hourly``: Forecasts with hourly resolution\n* ``all``: All sections\n"
+						},
+						{
+							"key": "timezone",
+							"value": "",
+							"description": "Timezone to be used for the date fields. If not specified, local timezone of the forecast location will be used.\nThe format is according to the tzinfo database, so values like `Europe/Prague` or `UTC` can be used.\nAlternatively you may use the value ``auto`` in which case the local timezone of the location is used.\nThe full list of valid timezone strings can be found [here](https://en.wikipedia.org/wiki/List_of_tz_database_time_zones#List).\n"
+						},
+						{
+							"key": "language",
+							"value": "en",
+							"description": "The language of text summaries and place names (variable names are never translated). For the free tier,\nonly ``en`` (English) is available.\n"
+						},
+						{
+							"key": "units",
+							"value": "us",
+							"description": "Unit system to be used. The available values are:\n\n* `auto`: Select the system automatically, based on the forecast location.\n* `metric`: Metric (SI) units (`°C`, `mm/h`, `m/s`, `cm`, `km`, `hPa`).\n* `us`: Imperial units (`°F`, `in/h`, `mph`, `in`, `mi`, `Hg`).\n* `uk`: Same as ``metric``, except that visibility is in `miles` and wind speeds are in `mph`.\n* `ca`: Same as ``metric``, except that wind speeds are in `km/h` and pressure is in `kPa`.\n"
+						}
+					]
+				},
+				"description": "## Current weather and forecast for single location\n\n### Location specification\n\nThe location of the weather data is the only parameter that is required and must be specified. There are two ways to do this:\n\n1.  Specify the GPS coordinates of the location using the parameters `lat` and `lon`.\n2.  **OR** specify the name of the place using the parameter `place_id`. To obtain the `place_id` for the location you want, please use endpoints `/find_places_prefix` (search by prefix) or `/find_places` (search by full name).\n    \n\n*Note: For mountains, it is usually better to specify the* *`place_id`* *rather than the* *`lat`* *and* *`lon`****. When you use* *`place_id`****, you are guaranteed to receive forecasts for the precise elevation of the peak. When you specify the coordinates, the elevation can be less precise.*\n\n### Sections\n\nThe endpoint can return multiple sections of data. To obtain the best performance, we advise only requesting the sections you actually need. The available sections are as follows:\n\n*   Current weather situation\n*   Hourly forecast (for 24/48/96/168 hours, depending on the tier)\n*   Daily forecast (for 7/10/30 days, depending on the tier)\n*   Minutely precipitation forecast (for 60 minutes in the following hour, only for higher tiers)\n*   Weather alerts (only for higher tiers)\n    \n\nBy default, only the current and hourly sections are returned. The division into daily parts (morning, afternoon and evening) is only available for the first 7 days of the forecast. For details regarding available parameters, see the parameter description below.\n\n### Notes\n\n*   **For a detailed description of variables (e.g. icons), please consult**\n    \n    <a href=\"https://www.meteosource.com/documentation#description\"><b>description of variables</b></a>\n    \n    .\n*   Variables can be instantaneous, averaged, or accumulated over certain time. For example, `precipitation` forecast provides the precipitation accumulated since the previous hour (data with timestamp as `12:00:00` is rain accumulated from `11:00:00` to `12:00:00`).\n*   Do **not** make any assumptions about the number and ordering of the variables. New variables and sections may be introduced in the future. Always check the data are present before you try to use them.\n*   The response contains an `Expires` header, which defines the point at which the API response will not change for the same request. We highly recommend using this to avoid unnecessary requests and **increase the performance of your app**.\n*   When daylight saving time starts, one hourly record will be missing (typically `2:00:00 AM`). When daylight saving time ends, the hourly forecast will contain two records with duplicate times (typically `2:00:00 AM`).\n*   The detailed description of weather alerts is only available in English. The alert category is translated into selected language.\n\n### Description of variables\n\n| **Name** | **Description** |\n| --- | --- |\n| `weather` | String identifier of the weather icon, e.g. `light_rain.` |\n| `icon` | Numeric identifier of the weather icon. |\n| `summary` | Short text summary of the weather, e.g. `Light rain.` |\n| `predictability` | Weather predictability. Values from 1 (very high predictability) to 5 (very low predictability). |\n| `temperature` | Temperature 2 metres above ground. |\n| `feels_like` | Feels like temperature. |\n| `soil_temperature` | Soil temperature. |\n| `wind_chill` | Windchill temperature. |\n| `dew_point` | Dew point temperature. |\n| `surface_temperature` | Surface air temperature. |\n| `wind.speed` | Wind speed 10 metres above the ground. |\n| `wind.gusts` | Wind gust speed. |\n| `wind.dir` | Wind direction in `N`, `NNE`, `NE`, ..., `NNW` format. |\n| `wind.angle` | Wind direction angle in degrees, 180° means wind from the south. |\n| `cloud_cover.total` | Percentage of sky covered by clouds. |\n| `cloud_cover.low` | Percentage of sky covered by low clouds. |\n| `cloud_cover.middle` | Percentage of sky covered by middle clouds. |\n| `cloud_cover.high` | Percentage of sky covered by high clouds. |\n| `pressure` | Atmospheric pressure at mean sea level. |\n| `precipitation.total` | Total precipitation amount accumulated since last hour. |\n| `precipitation.type` | Precipitation type, one of `rain`, `snow`, `rain_snow` or `none` if there is no precipitation. |\n| `precipitation.convective` | Total convective precipitation amount accumulated since last hour. |\n| `precipitation.rainspot` | Precipitation in the surrounding of queried location. The data is 7x7 ASCII art string, queried location being in the center. Character `#` means there is precipitation, `.` means no precipitation. The distance between neighboring cells is 0.25°. |\n| `probability.precipitation` | Probability of non-zero precipitation. |\n| `probability.storm` | Probability of thunderstorm. |\n| `probability.freeze` | Probability the temperature drops below 0 °C. |\n| `cape` | Convective available potential energy. |\n| `evaporation` | Evaporation of liquid water into water vapor. |\n| `irradiance` | Global downward short-wave radiation flux. |\n| `lftx` | Surface lifted index. |\n| `ozone` | Total column of ozone. |\n| `uv_index` | UV index, values from zero (low risk of harm) to 11+ (extreme risk of harm). |\n| `humidity` | Relative humidity. |\n| `snow_depth` | Snow depth. |\n| `sunshine_duration` | Sunshine duration since start of previous hour. |\n| `visibility` | Visibility. |\n| `astro.sun.rise` | Datetime of the sunrise or null during polar day/night. |\n| `astro.sun.set` | Datetime of the sunset or null during polar day/night. |\n| `astro.sun.always_up` | True if the sun never sets on given day (polar day), false otherwise. |\n| `astro.sun.always_down` | True if the sun never rises on given day (polar night), false otherwise. |\n| `astro.moon.rise` | Datetime of the moonrise or null if the moon does not rise on given day. |\n| `astro.moon.set` | Datetime of the moonset or null if the moon does not set on given day. |\n| `astro.moon.always_up` | True if the moon never sets on given day, false otherwise. |\n| `astro.moon.always_down` | True if the moon never rises on given day, false otherwise. |\n| `astro.moon.phase` | Number of the moon phase, from 0 to 3 (inclusive), meaning `new_moon`, `first_quarter`, `full_moon`, `last_quarter`, respectively. |\n| `alerts.event` | Weather alert event category (translated to selected language). |\n| `alerts.onset` | Datetime of the alert start. |\n| `alerts.expires` | Datetime of the alert end. |\n| `alerts.sender` | Name of the authority that issued the alert. |\n| `alerts.certainty` | Alert certainty, one of `Extreme`, `Severe`, `Moderate`, `Minor`. |\n| `alerts.severity` | Alert severity, one of `Observed`, `Likely`, `Possible`, `Unlikely`. |\n| `alerts.headline` | Alert headline (always in English). |\n| `alerts.description` | Detailed alert description (always in English). |"
+			},
+			"response": [
+				{
+					"name": "Successful Response",
+					"originalRequest": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "https://meteosource.com/api/v1/flexi/point?place_id=london&lat=&lon=&sections=current,hourly&timezone=&language=en&units=us",
+							"protocol": "https",
+							"host": [
+								"meteosource",
+								"com"
+							],
+							"path": [
+								"api",
+								"v1",
+								"flexi",
+								"point"
+							],
+							"query": [
+								{
+									"key": "place_id",
+									"value": "london"
+								},
+								{
+									"key": "lat",
+									"value": ""
+								},
+								{
+									"key": "lon",
+									"value": ""
+								},
+								{
+									"key": "sections",
+									"value": "current,hourly"
+								},
+								{
+									"key": "timezone",
+									"value": ""
+								},
+								{
+									"key": "language",
+									"value": "en"
+								},
+								{
+									"key": "units",
+									"value": "us"
+								}
+							]
+						}
+					},
+					"status": "OK",
+					"code": 200,
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "Content-Type",
+							"value": "application/json"
+						}
+					],
+					"cookie": [],
+					"body": "{\n    \"lat\": \"51.50853N\",\n    \"lon\": \"0.12574W\",\n    \"elevation\": 82,\n    \"timezone\": \"Europe/London\",\n    \"units\": \"us\",\n    \"current\": {\n        \"icon\": \"sunny\",\n        \"icon_num\": 2,\n        \"summary\": \"Sunny\",\n        \"temperature\": 76.7,\n        \"wind\": {\n            \"speed\": 7.2,\n            \"angle\": 60,\n            \"dir\": \"ENE\"\n        },\n        \"precipitation\": {\n            \"total\": 0.0,\n            \"type\": \"none\"\n        },\n        \"cloud_cover\": 0.0\n    },\n    \"hourly\": {\n        \"data\": [\n            {\n                \"date\": \"2022-08-12T10:00:00\",\n                \"weather\": \"sunny\",\n                \"icon\": 2,\n                \"summary\": \"Sunny\",\n                \"temperature\": 76.7,\n                \"wind\": {\n                    \"speed\": 7.2,\n                    \"dir\": \"ENE\",\n                    \"angle\": 60\n                },\n                \"cloud_cover\": {\n                    \"total\": 0.0\n                },\n                \"precipitation\": {\n                    \"total\": 0.0,\n                    \"type\": \"none\"\n                }\n            },\n            {\n                \"date\": \"2022-08-12T11:00:00\",\n                \"weather\": \"sunny\",\n                \"icon\": 2,\n                \"summary\": \"Sunny\",\n                \"temperature\": 81.7,\n                \"wind\": {\n                    \"speed\": 7.0,\n                    \"dir\": \"ENE\",\n                    \"angle\": 65\n                },\n                \"cloud_cover\": {\n                    \"total\": 0.0\n                },\n                \"precipitation\": {\n                    \"total\": 0.0,\n                    \"type\": \"none\"\n                }\n            },\n            {\n                \"date\": \"2022-08-12T12:00:00\",\n                \"weather\": \"sunny\",\n                \"icon\": 2,\n                \"summary\": \"Sunny\",\n                \"temperature\": 85.7,\n                \"wind\": {\n                    \"speed\": 6.9,\n                    \"dir\": \"ENE\",\n                    \"angle\": 69\n                },\n                \"cloud_cover\": {\n                    \"total\": 0.0\n                },\n                \"precipitation\": {\n                    \"total\": 0.0,\n                    \"type\": \"none\"\n                }\n            },\n            {\n                \"date\": \"2022-08-12T13:00:00\",\n                \"weather\": \"sunny\",\n                \"icon\": 2,\n                \"summary\": \"Sunny\",\n                \"temperature\": 88.4,\n                \"wind\": {\n                    \"speed\": 7.4,\n                    \"dir\": \"ENE\",\n                    \"angle\": 78\n                },\n                \"cloud_cover\": {\n                    \"total\": 0.0\n                },\n                \"precipitation\": {\n                    \"total\": 0.0,\n                    \"type\": \"none\"\n                }\n            },\n            {\n                \"date\": \"2022-08-12T14:00:00\",\n                \"weather\": \"sunny\",\n                \"icon\": 2,\n                \"summary\": \"Sunny\",\n                \"temperature\": 89.8,\n                \"wind\": {\n                    \"speed\": 9.2,\n                    \"dir\": \"E\",\n                    \"angle\": 94\n                },\n                \"cloud_cover\": {\n                    \"total\": 0.0\n                },\n                \"precipitation\": {\n                    \"total\": 0.0,\n                    \"type\": \"none\"\n                }\n            },\n            {\n                \"date\": \"2022-08-12T15:00:00\",\n                \"weather\": \"sunny\",\n                \"icon\": 2,\n                \"summary\": \"Sunny\",\n                \"temperature\": 89.8,\n                \"wind\": {\n                    \"speed\": 10.4,\n                    \"dir\": \"E\",\n                    \"angle\": 101\n                },\n                \"cloud_cover\": {\n                    \"total\": 0.0\n                },\n                \"precipitation\": {\n                    \"total\": 0.0,\n                    \"type\": \"none\"\n                }\n            },\n            {\n                \"date\": \"2022-08-12T16:00:00\",\n                \"weather\": \"sunny\",\n                \"icon\": 2,\n                \"summary\": \"Sunny\",\n                \"temperature\": 89.3,\n                \"wind\": {\n                    \"speed\": 10.4,\n                    \"dir\": \"E\",\n                    \"angle\": 100\n                },\n                \"cloud_cover\": {\n                    \"total\": 0.0\n                },\n                \"precipitation\": {\n                    \"total\": 0.0,\n                    \"type\": \"none\"\n                }\n            },\n            {\n                \"date\": \"2022-08-12T17:00:00\",\n                \"weather\": \"sunny\",\n                \"icon\": 2,\n                \"summary\": \"Sunny\",\n                \"temperature\": 88.4,\n                \"wind\": {\n                    \"speed\": 10.2,\n                    \"dir\": \"E\",\n                    \"angle\": 100\n                },\n                \"cloud_cover\": {\n                    \"total\": 0.0\n                },\n                \"precipitation\": {\n                    \"total\": 0.0,\n                    \"type\": \"none\"\n                }\n            },\n            {\n                \"date\": \"2022-08-12T18:00:00\",\n                \"weather\": \"sunny\",\n                \"icon\": 2,\n                \"summary\": \"Sunny\",\n                \"temperature\": 86.6,\n                \"wind\": {\n                    \"speed\": 9.7,\n                    \"dir\": \"E\",\n                    \"angle\": 101\n                },\n                \"cloud_cover\": {\n                    \"total\": 0.0\n                },\n                \"precipitation\": {\n                    \"total\": 0.0,\n                    \"type\": \"none\"\n                }\n            },\n            {\n                \"date\": \"2022-08-12T19:00:00\",\n                \"weather\": \"sunny\",\n                \"icon\": 2,\n                \"summary\": \"Sunny\",\n                \"temperature\": 84.4,\n                \"wind\": {\n                    \"speed\": 9.0,\n                    \"dir\": \"E\",\n                    \"angle\": 96\n                },\n                \"cloud_cover\": {\n                    \"total\": 0.0\n                },\n                \"precipitation\": {\n                    \"total\": 0.0,\n                    \"type\": \"none\"\n                }\n            },\n            {\n                \"date\": \"2022-08-12T20:00:00\",\n                \"weather\": \"sunny\",\n                \"icon\": 2,\n                \"summary\": \"Sunny\",\n                \"temperature\": 81.2,\n                \"wind\": {\n                    \"speed\": 8.0,\n                    \"dir\": \"E\",\n                    \"angle\": 98\n                },\n                \"cloud_cover\": {\n                    \"total\": 0.0\n                },\n                \"precipitation\": {\n                    \"total\": 0.0,\n                    \"type\": \"none\"\n                }\n            },\n            {\n                \"date\": \"2022-08-12T21:00:00\",\n                \"weather\": \"clear\",\n                \"icon\": 26,\n                \"summary\": \"Clear\",\n                \"temperature\": 77.2,\n                \"wind\": {\n                    \"speed\": 8.0,\n                    \"dir\": \"E\",\n                    \"angle\": 93\n                },\n                \"cloud_cover\": {\n                    \"total\": 0.0\n                },\n                \"precipitation\": {\n                    \"total\": 0.0,\n                    \"type\": \"none\"\n                }\n            },\n            {\n                \"date\": \"2022-08-12T22:00:00\",\n                \"weather\": \"clear\",\n                \"icon\": 26,\n                \"summary\": \"Clear\",\n                \"temperature\": 74.0,\n                \"wind\": {\n                    \"speed\": 8.2,\n                    \"dir\": \"E\",\n                    \"angle\": 80\n                },\n                \"cloud_cover\": {\n                    \"total\": 0.0\n                },\n                \"precipitation\": {\n                    \"total\": 0.0,\n                    \"type\": \"none\"\n                }\n            },\n            {\n                \"date\": \"2022-08-12T23:00:00\",\n                \"weather\": \"clear\",\n                \"icon\": 26,\n                \"summary\": \"Clear\",\n                \"temperature\": 72.2,\n                \"wind\": {\n                    \"speed\": 8.2,\n                    \"dir\": \"ENE\",\n                    \"angle\": 69\n                },\n                \"cloud_cover\": {\n                    \"total\": 0.0\n                },\n                \"precipitation\": {\n                    \"total\": 0.0,\n                    \"type\": \"none\"\n                }\n            },\n            {\n                \"date\": \"2022-08-13T00:00:00\",\n                \"weather\": \"clear\",\n                \"icon\": 26,\n                \"summary\": \"Clear\",\n                \"temperature\": 70.4,\n                \"wind\": {\n                    \"speed\": 7.5,\n                    \"dir\": \"ENE\",\n                    \"angle\": 61\n                },\n                \"cloud_cover\": {\n                    \"total\": 0.0\n                },\n                \"precipitation\": {\n                    \"total\": 0.0,\n                    \"type\": \"none\"\n                }\n            },\n            {\n                \"date\": \"2022-08-13T01:00:00\",\n                \"weather\": \"clear\",\n                \"icon\": 26,\n                \"summary\": \"Clear\",\n                \"temperature\": 69.1,\n                \"wind\": {\n                    \"speed\": 6.7,\n                    \"dir\": \"NE\",\n                    \"angle\": 51\n                },\n                \"cloud_cover\": {\n                    \"total\": 0.0\n                },\n                \"precipitation\": {\n                    \"total\": 0.0,\n                    \"type\": \"none\"\n                }\n            },\n            {\n                \"date\": \"2022-08-13T02:00:00\",\n                \"weather\": \"clear\",\n                \"icon\": 26,\n                \"summary\": \"Clear\",\n                \"temperature\": 67.7,\n                \"wind\": {\n                    \"speed\": 6.4,\n                    \"dir\": \"NE\",\n                    \"angle\": 43\n                },\n                \"cloud_cover\": {\n                    \"total\": 0.0\n                },\n                \"precipitation\": {\n                    \"total\": 0.0,\n                    \"type\": \"none\"\n                }\n            },\n            {\n                \"date\": \"2022-08-13T03:00:00\",\n                \"weather\": \"clear\",\n                \"icon\": 26,\n                \"summary\": \"Clear\",\n                \"temperature\": 66.8,\n                \"wind\": {\n                    \"speed\": 5.9,\n                    \"dir\": \"NE\",\n                    \"angle\": 39\n                },\n                \"cloud_cover\": {\n                    \"total\": 0.0\n                },\n                \"precipitation\": {\n                    \"total\": 0.0,\n                    \"type\": \"none\"\n                }\n            },\n            {\n                \"date\": \"2022-08-13T04:00:00\",\n                \"weather\": \"clear\",\n                \"icon\": 26,\n                \"summary\": \"Clear\",\n                \"temperature\": 65.9,\n                \"wind\": {\n                    \"speed\": 5.9,\n                    \"dir\": \"NE\",\n                    \"angle\": 36\n                },\n                \"cloud_cover\": {\n                    \"total\": 0.0\n                },\n                \"precipitation\": {\n                    \"total\": 0.0,\n                    \"type\": \"none\"\n                }\n            },\n            {\n                \"date\": \"2022-08-13T05:00:00\",\n                \"weather\": \"sunny\",\n                \"icon\": 2,\n                \"summary\": \"Sunny\",\n                \"temperature\": 65.0,\n                \"wind\": {\n                    \"speed\": 5.7,\n                    \"dir\": \"NE\",\n                    \"angle\": 39\n                },\n                \"cloud_cover\": {\n                    \"total\": 0.0\n                },\n                \"precipitation\": {\n                    \"total\": 0.0,\n                    \"type\": \"none\"\n                }\n            },\n            {\n                \"date\": \"2022-08-13T06:00:00\",\n                \"weather\": \"sunny\",\n                \"icon\": 2,\n                \"summary\": \"Sunny\",\n                \"temperature\": 64.6,\n                \"wind\": {\n                    \"speed\": 5.4,\n                    \"dir\": \"NE\",\n                    \"angle\": 36\n                },\n                \"cloud_cover\": {\n                    \"total\": 0.0\n                },\n                \"precipitation\": {\n                    \"total\": 0.0,\n                    \"type\": \"none\"\n                }\n            },\n            {\n                \"date\": \"2022-08-13T07:00:00\",\n                \"weather\": \"sunny\",\n                \"icon\": 2,\n                \"summary\": \"Sunny\",\n                \"temperature\": 65.0,\n                \"wind\": {\n                    \"speed\": 6.2,\n                    \"dir\": \"NE\",\n                    \"angle\": 49\n                },\n                \"cloud_cover\": {\n                    \"total\": 0.0\n                },\n                \"precipitation\": {\n                    \"total\": 0.0,\n                    \"type\": \"none\"\n                }\n            },\n            {\n                \"date\": \"2022-08-13T08:00:00\",\n                \"weather\": \"sunny\",\n                \"icon\": 2,\n                \"summary\": \"Sunny\",\n                \"temperature\": 68.2,\n                \"wind\": {\n                    \"speed\": 6.3,\n                    \"dir\": \"NE\",\n                    \"angle\": 55\n                },\n                \"cloud_cover\": {\n                    \"total\": 3\n                },\n                \"precipitation\": {\n                    \"total\": 0.0,\n                    \"type\": \"none\"\n                }\n            },\n            {\n                \"date\": \"2022-08-13T09:00:00\",\n                \"weather\": \"sunny\",\n                \"icon\": 2,\n                \"summary\": \"Sunny\",\n                \"temperature\": 71.3,\n                \"wind\": {\n                    \"speed\": 6.1,\n                    \"dir\": \"ENE\",\n                    \"angle\": 65\n                },\n                \"cloud_cover\": {\n                    \"total\": 3\n                },\n                \"precipitation\": {\n                    \"total\": 0.0,\n                    \"type\": \"none\"\n                }\n            }\n        ]\n    },\n    \"daily\": null\n}"
+				}
+			]
+		},
+		{
+			"name": "Search for places. Complete words required.",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Accept",
+						"value": "application/json"
+					}
+				],
+				"url": {
+					"raw": "https://meteosource.com/api/v1/{{tier}}/find_places?text=london&language=en",
+					"protocol": "https",
+					"host": [
+						"meteosource",
+						"com"
+					],
+					"path": [
+						"api",
+						"v1",
+						"{{tier}}",
+						"find_places"
+					],
+					"query": [
+						{
+							"key": "text",
+							"value": "london",
+							"description": "(Required) Place name or ZIP code"
+						},
+						{
+							"key": "language",
+							"value": "en",
+							"description": "The language of text summaries and place names (variable names are never translated). For the free tier,\nonly ``en`` (English) is available.\n"
+						}
+					]
+				},
+				"description": "## Search for places\n\nYou can use this endpoint to obtain `place_id` of the location you want, to be used in `point` endpoint.\nThe response also contains detailed information about the location, such as coordinates, timezone and the country the place belongs to.\n\nUnlike the `/find_place_prefix` endpoint, complete words are required here. You can search for cities,\nmountains, lakes, countries, ZIP codes, etc. The response can contain multiple places, sorted by relevance.\nYou can then identify the one you want by coordinates, country, or the administrative area.\n"
+			},
+			"response": [
+				{
+					"name": "Successful Response",
+					"originalRequest": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "https://meteosource.com/api/v1/flexi/find_places?text=london&language=en",
+							"protocol": "https",
+							"host": [
+								"meteosource",
+								"com"
+							],
+							"path": [
+								"api",
+								"v1",
+								"flexi",
+								"find_places"
+							],
+							"query": [
+								{
+									"key": "text",
+									"value": "london"
+								},
+								{
+									"key": "language",
+									"value": "en"
+								}
+							]
+						}
+					},
+					"status": "OK",
+					"code": 200,
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "Content-Type",
+							"value": "application/json"
+						}
+					],
+					"cookie": [],
+					"body": "[\n    {\n        \"name\": \"London\",\n        \"place_id\": \"london\",\n        \"adm_area1\": \"England\",\n        \"adm_area2\": \"Greater London\",\n        \"country\": \"United Kingdom\",\n        \"lat\": \"51.50853N\",\n        \"lon\": \"0.12574W\",\n        \"timezone\": \"Europe/London\",\n        \"type\": \"settlement\"\n    },\n    {\n        \"name\": \"London\",\n        \"place_id\": \"london-6058560\",\n        \"adm_area1\": \"Ontario\",\n        \"adm_area2\": null,\n        \"country\": \"Canada\",\n        \"lat\": \"42.98339N\",\n        \"lon\": \"81.23304W\",\n        \"timezone\": \"America/Toronto\",\n        \"type\": \"settlement\"\n    },\n    {\n        \"name\": \"London\",\n        \"place_id\": \"london-4298960\",\n        \"adm_area1\": \"Kentucky\",\n        \"adm_area2\": \"Laurel\",\n        \"country\": \"United States of America\",\n        \"lat\": \"37.12898N\",\n        \"lon\": \"84.08326W\",\n        \"timezone\": \"America/New_York\",\n        \"type\": \"settlement\"\n    },\n    {\n        \"name\": \"City of London\",\n        \"place_id\": \"city-of-london\",\n        \"adm_area1\": \"England\",\n        \"adm_area2\": \"Greater London\",\n        \"country\": \"United Kingdom\",\n        \"lat\": \"51.51279N\",\n        \"lon\": \"0.09184W\",\n        \"timezone\": \"Europe/London\",\n        \"type\": \"settlement\"\n    },\n    {\n        \"name\": \"London\",\n        \"place_id\": \"london-4517009\",\n        \"adm_area1\": \"Ohio\",\n        \"adm_area2\": \"Madison\",\n        \"country\": \"United States of America\",\n        \"lat\": \"39.88645N\",\n        \"lon\": \"83.44825W\",\n        \"timezone\": \"America/New_York\",\n        \"type\": \"settlement\"\n    },\n    {\n        \"name\": \"London\",\n        \"place_id\": \"london-5367815\",\n        \"adm_area1\": \"California\",\n        \"adm_area2\": \"Tulare\",\n        \"country\": \"United States of America\",\n        \"lat\": \"36.47606N\",\n        \"lon\": \"119.44318W\",\n        \"timezone\": \"America/Los_Angeles\",\n        \"type\": \"settlement\"\n    },\n    {\n        \"name\": \"London Village\",\n        \"place_id\": \"london-village\",\n        \"adm_area1\": \"Line Islands\",\n        \"adm_area2\": \"Kiritimati\",\n        \"country\": \"Kiribati\",\n        \"lat\": \"1.98487N\",\n        \"lon\": \"157.47502W\",\n        \"timezone\": \"Pacific/Kiritimati\",\n        \"type\": \"settlement\"\n    },\n    {\n        \"name\": \"London\",\n        \"place_id\": \"london-4119617\",\n        \"adm_area1\": \"Arkansas\",\n        \"adm_area2\": \"Pope\",\n        \"country\": \"United States of America\",\n        \"lat\": \"35.32897N\",\n        \"lon\": \"93.25296W\",\n        \"timezone\": \"America/Chicago\",\n        \"type\": \"settlement\"\n    },\n    {\n        \"name\": \"London\",\n        \"place_id\": \"london-4707414\",\n        \"adm_area1\": \"Texas\",\n        \"adm_area2\": \"Kimble\",\n        \"country\": \"United States of America\",\n        \"lat\": \"30.67685N\",\n        \"lon\": \"99.57645W\",\n        \"timezone\": \"America/Chicago\",\n        \"type\": \"settlement\"\n    },\n    {\n        \"name\": \"City of London\",\n        \"place_id\": \"city-of-london-2643744\",\n        \"adm_area1\": \"England\",\n        \"adm_area2\": \"Greater London\",\n        \"country\": \"United Kingdom\",\n        \"lat\": \"51.51334N\",\n        \"lon\": \"0.08901W\",\n        \"timezone\": \"Europe/London\",\n        \"type\": \"administrative_area\"\n    }\n]"
+				}
+			]
+		},
+		{
+			"name": "Prefix search for places. Useful for autocomplete forms.",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Accept",
+						"value": "application/json"
+					}
+				],
+				"url": {
+					"raw": "https://meteosource.com/api/v1/{{tier}}/find_places_prefix?text=lond&language=en",
+					"protocol": "https",
+					"host": [
+						"meteosource",
+						"com"
+					],
+					"path": [
+						"api",
+						"v1",
+						"{{tier}}",
+						"find_places_prefix"
+					],
+					"query": [
+						{
+							"key": "text",
+							"value": "lond",
+							"description": "(Required) Place name or ZIP code"
+						},
+						{
+							"key": "language",
+							"value": "en",
+							"description": "The language of text summaries and place names (variable names are never translated). For the free tier,\nonly ``en`` (English) is available.\n"
+						}
+					]
+				},
+				"description": "## Search for places by prefix\n\nYou can use this endpoint to obtain `place_id` of the location you want, to be used in `point` endpoint. The response also contains detailed information about the location, such as coordinates, timezone and the country the place belongs to.\n\nUnlike the `/find_places` endpoint, you should only specify the prefix of the place you are looking for. This is particularly useful for autocomplete forms. You can search for cities, mountains, lakes, countries, ZIP codes, etc. The response can contain multiple places, sorted by relevance. You can then identify the one you want by coordinates, country, or the administrative area.\n"
+			},
+			"response": [
+				{
+					"name": "Successful Response",
+					"originalRequest": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "https://meteosource.com/api/v1/{{tier}}/find_places_prefix?text=lond&language=en",
+							"protocol": "https",
+							"host": [
+								"meteosource",
+								"com"
+							],
+							"path": [
+								"api",
+								"v1",
+								"{{tier}}",
+								"find_places_prefix"
+							],
+							"query": [
+								{
+									"key": "text",
+									"value": "lond"
+								},
+								{
+									"key": "language",
+									"value": "en"
+								}
+							]
+						}
+					},
+					"status": "OK",
+					"code": 200,
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "Content-Type",
+							"value": "application/json"
+						}
+					],
+					"cookie": [],
+					"body": "[\n    {\n        \"name\": \"London\",\n        \"place_id\": \"london\",\n        \"adm_area1\": \"England\",\n        \"adm_area2\": \"Greater London\",\n        \"country\": \"United Kingdom\",\n        \"lat\": \"51.50853N\",\n        \"lon\": \"0.12574W\",\n        \"timezone\": \"Europe/London\",\n        \"type\": \"settlement\"\n    },\n    {\n        \"name\": \"Londrina\",\n        \"place_id\": \"londrina\",\n        \"adm_area1\": \"Paraná\",\n        \"adm_area2\": \"Londrina\",\n        \"country\": \"Brazil\",\n        \"lat\": \"23.31028S\",\n        \"lon\": \"51.16278W\",\n        \"timezone\": \"America/Sao_Paulo\",\n        \"type\": \"settlement\"\n    },\n    {\n        \"name\": \"London\",\n        \"place_id\": \"london-6058560\",\n        \"adm_area1\": \"Ontario\",\n        \"adm_area2\": null,\n        \"country\": \"Canada\",\n        \"lat\": \"42.98339N\",\n        \"lon\": \"81.23304W\",\n        \"timezone\": \"America/Toronto\",\n        \"type\": \"settlement\"\n    },\n    {\n        \"name\": \"Brent\",\n        \"place_id\": \"brent\",\n        \"adm_area1\": \"England\",\n        \"adm_area2\": \"Greater London\",\n        \"country\": \"United Kingdom\",\n        \"lat\": \"51.55306N\",\n        \"lon\": \"0.3023W\",\n        \"timezone\": \"Europe/London\",\n        \"type\": \"settlement\"\n    },\n    {\n        \"name\": \"Bexley\",\n        \"place_id\": \"bexley\",\n        \"adm_area1\": \"England\",\n        \"adm_area2\": \"Greater London\",\n        \"country\": \"United Kingdom\",\n        \"lat\": \"51.44162N\",\n        \"lon\": \"0.14866E\",\n        \"timezone\": \"Europe/London\",\n        \"type\": \"settlement\"\n    },\n    {\n        \"name\": \"Sutton\",\n        \"place_id\": \"sutton\",\n        \"adm_area1\": \"England\",\n        \"adm_area2\": \"Greater London\",\n        \"country\": \"United Kingdom\",\n        \"lat\": \"51.35N\",\n        \"lon\": \"0.2W\",\n        \"timezone\": \"Europe/London\",\n        \"type\": \"settlement\"\n    },\n    {\n        \"name\": \"Lund\",\n        \"place_id\": \"lund\",\n        \"adm_area1\": \"Skåne County\",\n        \"adm_area2\": \"Lund Municipality\",\n        \"country\": \"Kingdom of Sweden\",\n        \"lat\": \"55.70584N\",\n        \"lon\": \"13.19321E\",\n        \"timezone\": \"Europe/Stockholm\",\n        \"type\": \"settlement\"\n    },\n    {\n        \"name\": \"Londonderry\",\n        \"place_id\": \"derry\",\n        \"adm_area1\": \"Northern Ireland\",\n        \"adm_area2\": \"Derry City and Strabane\",\n        \"country\": \"United Kingdom\",\n        \"lat\": \"54.9981N\",\n        \"lon\": \"7.30934W\",\n        \"timezone\": \"Europe/London\",\n        \"type\": \"settlement\"\n    },\n    {\n        \"name\": \"Hounslow\",\n        \"place_id\": \"hounslow\",\n        \"adm_area1\": \"England\",\n        \"adm_area2\": \"Greater London\",\n        \"country\": \"United Kingdom\",\n        \"lat\": \"51.46839N\",\n        \"lon\": \"0.36092W\",\n        \"timezone\": \"Europe/London\",\n        \"type\": \"settlement\"\n    },\n    {\n        \"name\": \"Lawndale\",\n        \"place_id\": \"lawndale\",\n        \"adm_area1\": \"California\",\n        \"adm_area2\": \"Los Angeles\",\n        \"country\": \"United States of America\",\n        \"lat\": \"33.88724N\",\n        \"lon\": \"118.35257W\",\n        \"timezone\": \"America/Los_Angeles\",\n        \"type\": \"settlement\"\n    }\n]"
+				}
+			]
+		},
+		{
+			"name": "Get the nearest named location for a given GPS coordinates.",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Accept",
+						"value": "application/json"
+					}
+				],
+				"url": {
+					"raw": "https://meteosource.com/api/v1/{{tier}}/nearest_place?lat=51.50853&lon=-0.1257&language=en",
+					"protocol": "https",
+					"host": [
+						"meteosource",
+						"com"
+					],
+					"path": [
+						"api",
+						"v1",
+						"{{tier}}",
+						"nearest_place"
+					],
+					"query": [
+						{
+							"key": "lat",
+							"value": "51.50853",
+							"description": "(Required) Latitude in format 12N, 12.3N, 12.3, or 13S, 13.2S, -13.4"
+						},
+						{
+							"key": "lon",
+							"value": "-0.1257",
+							"description": "(Required) Longitude in format 12E, 12.3E, 12.3, or 13W, 13.2W, -13.4"
+						},
+						{
+							"key": "language",
+							"value": "en",
+							"description": "The language of text summaries and place names (variable names are never translated). For the free tier,\nonly ``en`` (English) is available.\n"
+						}
+					]
+				},
+				"description": "## Search for nearest place by coordinates\n\nYou can use this endpoint to find the nearest place from given coordinates.\n\n*Note: If you specify coordinates of a secluded place (e.g. middle of the ocean), the nearest point can be very far from the coordinates.*\n"
+			},
+			"response": [
+				{
+					"name": "Successful Response",
+					"originalRequest": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "https://meteosource.com/api/v1/{{tier}}/nearest_place?lat=51.50853&lon=-0.1257&language=en",
+							"protocol": "https",
+							"host": [
+								"meteosource",
+								"com"
+							],
+							"path": [
+								"api",
+								"v1",
+								"{{tier}}",
+								"nearest_place"
+							],
+							"query": [
+								{
+									"key": "lat",
+									"value": "51.50853"
+								},
+								{
+									"key": "lon",
+									"value": "-0.1257"
+								},
+								{
+									"key": "language",
+									"value": "en"
+								}
+							]
+						}
+					},
+					"status": "OK",
+					"code": 200,
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "Content-Type",
+							"value": "application/json"
+						}
+					],
+					"cookie": [],
+					"body": "{\n    \"name\": \"London\",\n    \"place_id\": \"london\",\n    \"adm_area1\": \"England\",\n    \"adm_area2\": \"Greater London\",\n    \"country\": \"United Kingdom\",\n    \"lat\": \"51.50853N\",\n    \"lon\": \"0.12574W\",\n    \"timezone\": \"Europe/London\",\n    \"type\": \"settlement\"\n}"
+				}
+			]
+		},
+		{
+			"name": "Get PNG weather map for given area and variable",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Accept",
+						"value": "image/png"
+					}
+				],
+				"url": {
+					"raw": "https://meteosource.com/api/v1/{{tier}}/map?tile_x=2&tile_y=1&tile_zoom=2&variable=temperature&datetime=+12hours",
+					"protocol": "https",
+					"host": [
+						"meteosource",
+						"com"
+					],
+					"path": [
+						"api",
+						"v1",
+						"{{tier}}",
+						"map"
+					],
+					"query": [
+						{
+							"key": "tile_x",
+							"value": "2",
+							"description": "The X coordinate of Google Maps tile"
+						},
+						{
+							"key": "tile_y",
+							"value": "1",
+							"description": "The Y coordinate of Google Maps tile"
+						},
+						{
+							"key": "tile_zoom",
+							"value": "2",
+							"description": "The zoom level of Google Maps tile"
+						},
+						{
+							"key": "min_lat",
+							"value": "31",
+							"description": "Minimal latitude in format 12N, 12.3N, 12.3, or 13S, 13.2S, -13.2\n",
+							"disabled": true
+						},
+						{
+							"key": "min_lon",
+							"value": "-14",
+							"description": "Minimal longitude in format 12E, 12.3E, 12.3, or 13W, 13.2W, -13.2\n",
+							"disabled": true
+						},
+						{
+							"key": "max_lat",
+							"value": "67",
+							"description": "Maximal latitude in format 12N, 12.3N, 12.3, or 13S, 13.2S, -13.2.\n",
+							"disabled": true
+						},
+						{
+							"key": "max_lon",
+							"value": "56",
+							"description": "Maximal longitude in format 12E, 12.3E, 12.3, or 13W, 13.2W, -13.2\n",
+							"disabled": true
+						},
+						{
+							"key": "variable",
+							"value": "temperature",
+							"description": "(Required) Name of the variable for your map. Available values are:\n\n* `temperature`: Temperature 2 metres above ground\n* `feels_like_temperature`: Feels like temperature\n* `clouds`: Percentage of sky covered by clouds\n* `precipitation`: Total precipitation amount accumulated since last hour\n* `wind_speed`: Wind speed 10 metres above the ground\n* `wind_gust`: Wind gust speed\n* `pressure`: Atmospheric pressure at mean sea level\n* `humidity`: Relative humidity\n* `wave_height`: Wave height\n* `wave_period`: Wave period\n* `sea_temperature`: Sea temperature (available only for +-24 hours)\n"
+						},
+						{
+							"key": "datetime",
+							"value": "+12hours",
+							"description": "(Required) There are two ways to specify date and time for your map:\n\n1. Datetime in `YYYY-MM-DDTHH:MM` format and `UTC` timezone, e.g. `2021-08-24T12:00`\n2. Offset from current time in `[+-]<minutes|hours|days>` format, e.g. `+10minutes`, `-2hours` or `+1days`\n"
+						}
+					]
+				},
+				"description": "## PNG weather forecast maps for given area and variable\n\n### Area specification\nThere are two ways to specify geographical area you need for your map:\n1. Specify `X` and `Y` coordinates and zoom level `Z` of desired tile in [Google Maps Tile notation](https://www.maptiler.com/google-maps-coordinates-tile-bounds-projection/).\n2. Specify latitude and longitude bounds of the area you want to cover.\n\n### Notes\n* The resulting PNG maps are **always** in [Google Mercator projection (EPSG:3857)](https://epsg.io/3857).\n* As Meteosource only covers areas between latitudes 80° and -80°, you can only request maps within these bounds, when specifying the latitude and longitude boundaries. When specifying the area using Google Maps Tile notation, the regions outside our supported latitudes will be fully transparent.\n* The finest resolution is not available for maps covering very large regions. The resulting map will be automatically downscaled in this case, to guarantee high-speed responses.\n* Weather maps are only supported for forecasts, not for archive data.\n"
+			},
+			"response": [
+				{
+					"name": "Successful Response",
+					"originalRequest": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "https://meteosource.com/api/v1/{{tier}}/map?tile_x=2&tile_y=1&tile_zoom=2&variable=temperature&datetime=+12hours",
+							"protocol": "https",
+							"host": [
+								"meteosource",
+								"com"
+							],
+							"path": [
+								"api",
+								"v1",
+								"{{tier}}",
+								"map"
+							],
+							"query": [
+								{
+									"key": "tile_x",
+									"value": "2"
+								},
+								{
+									"key": "tile_y",
+									"value": "1"
+								},
+								{
+									"key": "tile_zoom",
+									"value": "2"
+								},
+								{
+									"key": "min_lat",
+									"value": "31",
+									"disabled": true
+								},
+								{
+									"key": "min_lon",
+									"value": "-14",
+									"disabled": true
+								},
+								{
+									"key": "max_lat",
+									"value": "67",
+									"disabled": true
+								},
+								{
+									"key": "max_lon",
+									"value": "56",
+									"disabled": true
+								},
+								{
+									"key": "variable",
+									"value": "temperature"
+								},
+								{
+									"key": "datetime",
+									"value": "+12hours"
+								}
+							]
+						}
+					},
+					"status": "OK",
+					"code": 200,
+					"_postman_previewlanguage": "text",
+					"header": [
+						{
+							"key": "Content-Type",
+							"value": "image/png"
+						}
+					],
+					"cookie": [],
+					"body": "image/png"
+				}
+			]
+		},
+		{
+			"name": "Get historical weather data for a single location and given day in the past",
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Accept",
+						"value": "application/json"
+					}
+				],
+				"url": {
+					"raw": "https://meteosource.com/api/v1/{{tier}}/time_machine?place_id=london&date=2019-09-07&timezone=UTC&units=metric",
+					"protocol": "https",
+					"host": [
+						"meteosource",
+						"com"
+					],
+					"path": [
+						"api",
+						"v1",
+						"{{tier}}",
+						"time_machine"
+					],
+					"query": [
+						{
+							"key": "place_id",
+							"value": "london",
+							"description": "Identifier of a place. To obtain the `place_id` for the location you want, please use endpoints `/find_places_prefix` (search by prefix) or `/find_places` (search by full name)."
+						},
+						{
+							"key": "lat",
+							"value": "",
+							"description": "Latitude in format 12N, 12.3N, 12.3, or 13S, 13.2S, -13.4",
+							"disabled": true
+						},
+						{
+							"key": "lon",
+							"value": "",
+							"description": "Longitude in format 12E, 12.3E, 12.3, or 13W, 13.2W, -13.4",
+							"disabled": true
+						},
+						{
+							"key": "date",
+							"value": "2019-09-07",
+							"description": "(Required) The UTC day of the data in the past. Specify in `YYYY-MM-DD` format, e.g. `2021-08-24`.\n"
+						},
+						{
+							"key": "timezone",
+							"value": "UTC",
+							"description": "Timezone to be used for the date fields. If not specified, local timezone of the forecast location will be used.\nThe format is according to the tzinfo database, so values like `Europe/Prague` or `UTC` can be used.\nAlternatively you may use the value ``auto`` in which case the local timezone of the location is used.\nThe full list of valid timezone strings can be found [here](https://en.wikipedia.org/wiki/List_of_tz_database_time_zones#List).\n"
+						},
+						{
+							"key": "units",
+							"value": "metric",
+							"description": "Unit system to be used. The available values are:\n\n* `auto`: Select the system automatically, based on the forecast location.\n* `metric`: Metric (SI) units (`°C`, `mm/h`, `m/s`, `cm`, `km`, `hPa`).\n* `us`: Imperial units (`°F`, `in/h`, `mph`, `in`, `mi`, `Hg`).\n* `uk`: Same as ``metric``, except that visibility is in `miles` and wind speeds are in `mph`.\n* `ca`: Same as ``metric``, except that wind speeds are in `km/h` and pressure is in `kPa`.\n"
+						}
+					]
+				},
+				"description": "## Actual weather data for a single location and day in the past\n\n### Location specification\nThe location of the weather data must be specified. There are two ways to do this:\n1. Specify the GPS coordinates of the location using the parameters `lat` and `lon`.\n2. **OR** specify the name of the place using the parameter `place_id`. To obtain the `place_id` for the location you want, please use endpoints `/find_places_prefix` (search by prefix) or `/find_places` (search by full name).\n\n*Note: For mountains, it is usually better to specify the `place_id` rather than the `lat` and `lon`. When you use `place_id`, you are guaranteed to receive data for the precise elevation of the peak. When you specify the coordinates, the elevation can be less precise.*\n\n### Notes\n* For each request, you **always** get data for 24 hours in given `UTC` day. If you need archive data across multiple `UTC` days, you have to execute multiple requests.\n"
+			},
+			"response": [
+				{
+					"name": "Successful Response",
+					"originalRequest": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "https://meteosource.com/api/v1/{{tier}}/time_machine?place_id=london&date=2015-09-07&timezone=UTC&units=metric",
+							"protocol": "https",
+							"host": [
+								"meteosource",
+								"com"
+							],
+							"path": [
+								"api",
+								"v1",
+								"{{tier}}",
+								"time_machine"
+							],
+							"query": [
+								{
+									"key": "place_id",
+									"value": "london"
+								},
+								{
+									"key": "lat",
+									"value": "",
+									"disabled": true
+								},
+								{
+									"key": "lon",
+									"value": "",
+									"disabled": true
+								},
+								{
+									"key": "date",
+									"value": "2015-09-07"
+								},
+								{
+									"key": "timezone",
+									"value": "UTC"
+								},
+								{
+									"key": "units",
+									"value": "metric"
+								}
+							]
+						}
+					},
+					"status": "OK",
+					"code": 200,
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "Content-Type",
+							"value": "application/json"
+						}
+					],
+					"cookie": [],
+					"body": "{\n    \"lat\": \"51.50853N\",\n    \"lon\": \"0.12574W\",\n    \"elevation\": 25,\n    \"timezone\": \"UTC\",\n    \"units\": \"metric\",\n    \"data\": [\n        {\n            \"date\": \"2015-09-07T00:00:00\",\n            \"weather\": \"sunny\",\n            \"icon\": 2,\n            \"temperature\": 10.6,\n            \"feels_like\": 10.4,\n            \"wind_chill\": 9.3,\n            \"soil_temperature\": 11.8,\n            \"dew_point\": 8.1,\n            \"surface_temperature\": 9.8,\n            \"wind\": {\n                \"speed\": 3.0,\n                \"gusts\": 5.4,\n                \"angle\": 327,\n                \"dir\": \"NNW\"\n            },\n            \"cloud_cover\": {\n                \"total\": 2,\n                \"low\": 2,\n                \"middle\": 0,\n                \"high\": 0\n            },\n            \"pressure\": 1029,\n            \"precipitation\": {\n                \"total\": 0,\n                \"type\": \"none\"\n            },\n            \"cape\": 0,\n            \"evaporation\": 0.0,\n            \"irradiance\": 0.0,\n            \"ozone\": 311,\n            \"humidity\": 84.0\n        },\n        {\n            \"date\": \"2015-09-07T01:00:00\",\n            \"weather\": \"sunny\",\n            \"icon\": 2,\n            \"temperature\": 10.0,\n            \"feels_like\": 9.9,\n            \"wind_chill\": 8.7,\n            \"soil_temperature\": 11.5,\n            \"dew_point\": 8.1,\n            \"surface_temperature\": 9.3,\n            \"wind\": {\n                \"speed\": 2.7,\n                \"gusts\": 4.9,\n                \"angle\": 323,\n                \"dir\": \"NW\"\n            },\n            \"cloud_cover\": {\n                \"total\": 2,\n                \"low\": 2,\n                \"middle\": 0,\n                \"high\": 0\n            },\n            \"pressure\": 1029,\n            \"precipitation\": {\n                \"total\": 0,\n                \"type\": \"none\"\n            },\n            \"cape\": 0,\n            \"evaporation\": -0.01,\n            \"irradiance\": 0.0,\n            \"ozone\": 311,\n            \"humidity\": 87.0\n        },\n        {\n            \"date\": \"2015-09-07T02:00:00\",\n            \"weather\": \"sunny\",\n            \"icon\": 2,\n            \"temperature\": 9.3,\n            \"feels_like\": 9.3,\n            \"wind_chill\": 8.0,\n            \"soil_temperature\": 11.0,\n            \"dew_point\": 7.9,\n            \"surface_temperature\": 8.8,\n            \"wind\": {\n                \"speed\": 2.6,\n                \"gusts\": 4.5,\n                \"angle\": 318,\n                \"dir\": \"NW\"\n            },\n            \"cloud_cover\": {\n                \"total\": 2,\n                \"low\": 2,\n                \"middle\": 0,\n                \"high\": 0\n            },\n            \"pressure\": 1029,\n            \"precipitation\": {\n                \"total\": 0,\n                \"type\": \"none\"\n            },\n            \"cape\": 0,\n            \"evaporation\": -0.01,\n            \"irradiance\": 0.0,\n            \"ozone\": 310,\n            \"humidity\": 90.0\n        },\n        {\n            \"date\": \"2015-09-07T03:00:00\",\n            \"weather\": \"sunny\",\n            \"icon\": 2,\n            \"temperature\": 8.8,\n            \"feels_like\": 8.7,\n            \"wind_chill\": 7.4,\n            \"soil_temperature\": 10.5,\n            \"dew_point\": 7.6,\n            \"surface_temperature\": 8.4,\n            \"wind\": {\n                \"speed\": 2.5,\n                \"gusts\": 4.2,\n                \"angle\": 319,\n                \"dir\": \"NW\"\n            },\n            \"cloud_cover\": {\n                \"total\": 3,\n                \"low\": 3,\n                \"middle\": 0,\n                \"high\": 0\n            },\n            \"pressure\": 1029,\n            \"precipitation\": {\n                \"total\": 0,\n                \"type\": \"none\"\n            },\n            \"cape\": 0,\n            \"evaporation\": -0.01,\n            \"irradiance\": 0.0,\n            \"ozone\": 310,\n            \"humidity\": 92.0\n        },\n        {\n            \"date\": \"2015-09-07T04:00:00\",\n            \"weather\": \"sunny\",\n            \"icon\": 2,\n            \"temperature\": 8.5,\n            \"feels_like\": 8.4,\n            \"wind_chill\": 7.0,\n            \"soil_temperature\": 10.3,\n            \"dew_point\": 7.3,\n            \"surface_temperature\": 8.1,\n            \"wind\": {\n                \"speed\": 2.5,\n                \"gusts\": 4.1,\n                \"angle\": 319,\n                \"dir\": \"NW\"\n            },\n            \"cloud_cover\": {\n                \"total\": 3,\n                \"low\": 3,\n                \"middle\": 0,\n                \"high\": 0\n            },\n            \"pressure\": 1029,\n            \"precipitation\": {\n                \"total\": 0,\n                \"type\": \"none\"\n            },\n            \"cape\": 0,\n            \"evaporation\": -0.01,\n            \"irradiance\": 0.0,\n            \"ozone\": 310,\n            \"humidity\": 92.0\n        },\n        {\n            \"date\": \"2015-09-07T05:00:00\",\n            \"weather\": \"sunny\",\n            \"icon\": 2,\n            \"temperature\": 8.0,\n            \"feels_like\": 8.0,\n            \"wind_chill\": 6.5,\n            \"soil_temperature\": 9.9,\n            \"dew_point\": 7.1,\n            \"surface_temperature\": 8.0,\n            \"wind\": {\n                \"speed\": 2.5,\n                \"gusts\": 4.1,\n                \"angle\": 323,\n                \"dir\": \"NW\"\n            },\n            \"cloud_cover\": {\n                \"total\": 1,\n                \"low\": 1,\n                \"middle\": 0,\n                \"high\": 0\n            },\n            \"pressure\": 1029,\n            \"precipitation\": {\n                \"total\": 0,\n                \"type\": \"none\"\n            },\n            \"cape\": 0,\n            \"evaporation\": -0.01,\n            \"irradiance\": 11.8,\n            \"ozone\": 310,\n            \"humidity\": 93.0\n        },\n        {\n            \"date\": \"2015-09-07T06:00:00\",\n            \"weather\": \"sunny\",\n            \"icon\": 2,\n            \"temperature\": 8.2,\n            \"feels_like\": 8.1,\n            \"wind_chill\": 6.6,\n            \"soil_temperature\": 9.7,\n            \"dew_point\": 7.3,\n            \"surface_temperature\": 8.5,\n            \"wind\": {\n                \"speed\": 2.7,\n                \"gusts\": 5.2,\n                \"angle\": 331,\n                \"dir\": \"NNW\"\n            },\n            \"cloud_cover\": {\n                \"total\": 0,\n                \"low\": 0,\n                \"middle\": 0,\n                \"high\": 0\n            },\n            \"pressure\": 1029,\n            \"precipitation\": {\n                \"total\": 0,\n                \"type\": \"none\"\n            },\n            \"cape\": 0,\n            \"evaporation\": 0.02,\n            \"irradiance\": 115.0,\n            \"ozone\": 310,\n            \"humidity\": 93.0\n        },\n        {\n            \"date\": \"2015-09-07T07:00:00\",\n            \"weather\": \"sunny\",\n            \"icon\": 2,\n            \"temperature\": 9.8,\n            \"feels_like\": 9.8,\n            \"wind_chill\": 8.5,\n            \"soil_temperature\": 10.2,\n            \"dew_point\": 8.4,\n            \"surface_temperature\": 11.4,\n            \"wind\": {\n                \"speed\": 2.7,\n                \"gusts\": 6.1,\n                \"angle\": 338,\n                \"dir\": \"NNW\"\n            },\n            \"cloud_cover\": {\n                \"total\": 3,\n                \"low\": 3,\n                \"middle\": 0,\n                \"high\": 0\n            },\n            \"pressure\": 1030,\n            \"precipitation\": {\n                \"total\": 0,\n                \"type\": \"none\"\n            },\n            \"cape\": 0,\n            \"evaporation\": 0.09,\n            \"irradiance\": 267.5,\n            \"ozone\": 310,\n            \"humidity\": 90.0\n        },\n        {\n            \"date\": \"2015-09-07T08:00:00\",\n            \"weather\": \"sunny\",\n            \"icon\": 2,\n            \"temperature\": 12.0,\n            \"feels_like\": 12.1,\n            \"wind_chill\": 11.1,\n            \"soil_temperature\": 11.5,\n            \"dew_point\": 9.5,\n            \"surface_temperature\": 14.7,\n            \"wind\": {\n                \"speed\": 2.7,\n                \"gusts\": 6.5,\n                \"angle\": 353,\n                \"dir\": \"N\"\n            },\n            \"cloud_cover\": {\n                \"total\": 6,\n                \"low\": 6,\n                \"middle\": 0,\n                \"high\": 0\n            },\n            \"pressure\": 1030,\n            \"precipitation\": {\n                \"total\": 0,\n                \"type\": \"none\"\n            },\n            \"cape\": 0,\n            \"evaporation\": 0.17,\n            \"irradiance\": 381.4,\n            \"ozone\": 310,\n            \"humidity\": 84.0\n        },\n        {\n            \"date\": \"2015-09-07T09:00:00\",\n            \"weather\": \"sunny\",\n            \"icon\": 2,\n            \"temperature\": 14.2,\n            \"feels_like\": 14.4,\n            \"wind_chill\": 13.6,\n            \"soil_temperature\": 13.1,\n            \"dew_point\": 10.4,\n            \"surface_temperature\": 17.6,\n            \"wind\": {\n                \"speed\": 2.9,\n                \"gusts\": 7.2,\n                \"angle\": 5,\n                \"dir\": \"N\"\n            },\n            \"cloud_cover\": {\n                \"total\": 4,\n                \"low\": 4,\n                \"middle\": 0,\n                \"high\": 1\n            },\n            \"pressure\": 1031,\n            \"precipitation\": {\n                \"total\": 0,\n                \"type\": \"none\"\n            },\n            \"cape\": 0,\n            \"evaporation\": 0.28,\n            \"irradiance\": 546.5,\n            \"ozone\": 310,\n            \"humidity\": 78.0\n        },\n        {\n            \"date\": \"2015-09-07T10:00:00\",\n            \"weather\": \"partly_sunny\",\n            \"icon\": 4,\n            \"temperature\": 15.9,\n            \"feels_like\": 15.3,\n            \"wind_chill\": 15.5,\n            \"soil_temperature\": 14.5,\n            \"dew_point\": 11.0,\n            \"surface_temperature\": 19.3,\n            \"wind\": {\n                \"speed\": 3.4,\n                \"gusts\": 8.8,\n                \"angle\": 12,\n                \"dir\": \"NNE\"\n            },\n            \"cloud_cover\": {\n                \"total\": 50,\n                \"low\": 50,\n                \"middle\": 0,\n                \"high\": 0\n            },\n            \"pressure\": 1031,\n            \"precipitation\": {\n                \"total\": 0,\n                \"type\": \"none\"\n            },\n            \"cape\": 0,\n            \"evaporation\": 0.36,\n            \"irradiance\": 580.0,\n            \"ozone\": 311,\n            \"humidity\": 72.0\n        },\n        {\n            \"date\": \"2015-09-07T11:00:00\",\n            \"weather\": \"mostly_cloudy\",\n            \"icon\": 5,\n            \"temperature\": 16.9,\n            \"feels_like\": 15.7,\n            \"wind_chill\": 16.5,\n            \"soil_temperature\": 15.5,\n            \"dew_point\": 10.7,\n            \"surface_temperature\": 20.1,\n            \"wind\": {\n                \"speed\": 4.0,\n                \"gusts\": 9.2,\n                \"angle\": 1,\n                \"dir\": \"N\"\n            },\n            \"cloud_cover\": {\n                \"total\": 73,\n                \"low\": 73,\n                \"middle\": 0,\n                \"high\": 0\n            },\n            \"pressure\": 1030,\n            \"precipitation\": {\n                \"total\": 0,\n                \"type\": \"none\"\n            },\n            \"cape\": 4,\n            \"evaporation\": 0.37,\n            \"irradiance\": 497.7,\n            \"ozone\": 312,\n            \"humidity\": 66.0\n        },\n        {\n            \"date\": \"2015-09-07T12:00:00\",\n            \"weather\": \"overcast\",\n            \"icon\": 7,\n            \"temperature\": 17.5,\n            \"feels_like\": 15.8,\n            \"wind_chill\": 17.1,\n            \"soil_temperature\": 16.4,\n            \"dew_point\": 10.5,\n            \"surface_temperature\": 19.5,\n            \"wind\": {\n                \"speed\": 4.4,\n                \"gusts\": 9.3,\n                \"angle\": 1,\n                \"dir\": \"N\"\n            },\n            \"cloud_cover\": {\n                \"total\": 100,\n                \"low\": 100,\n                \"middle\": 0,\n                \"high\": 0\n            },\n            \"pressure\": 1031,\n            \"precipitation\": {\n                \"total\": 0,\n                \"type\": \"none\"\n            },\n            \"cape\": 4,\n            \"evaporation\": 0.3,\n            \"irradiance\": 349.8,\n            \"ozone\": 315,\n            \"humidity\": 63.0\n        },\n        {\n            \"date\": \"2015-09-07T13:00:00\",\n            \"weather\": \"overcast\",\n            \"icon\": 7,\n            \"temperature\": 17.3,\n            \"feels_like\": 15.5,\n            \"wind_chill\": 16.9,\n            \"soil_temperature\": 16.6,\n            \"dew_point\": 10.5,\n            \"surface_temperature\": 18.4,\n            \"wind\": {\n                \"speed\": 4.6,\n                \"gusts\": 9.1,\n                \"angle\": 5,\n                \"dir\": \"N\"\n            },\n            \"cloud_cover\": {\n                \"total\": 100,\n                \"low\": 100,\n                \"middle\": 1,\n                \"high\": 0\n            },\n            \"pressure\": 1030,\n            \"precipitation\": {\n                \"total\": 0,\n                \"type\": \"none\"\n            },\n            \"cape\": 2,\n            \"evaporation\": 0.29,\n            \"irradiance\": 331.2,\n            \"ozone\": 317,\n            \"humidity\": 64.0\n        },\n        {\n            \"date\": \"2015-09-07T14:00:00\",\n            \"weather\": \"overcast\",\n            \"icon\": 7,\n            \"temperature\": 17.1,\n            \"feels_like\": 15.4,\n            \"wind_chill\": 16.6,\n            \"soil_temperature\": 16.8,\n            \"dew_point\": 10.6,\n            \"surface_temperature\": 17.7,\n            \"wind\": {\n                \"speed\": 4.4,\n                \"gusts\": 8.9,\n                \"angle\": 9,\n                \"dir\": \"N\"\n            },\n            \"cloud_cover\": {\n                \"total\": 100,\n                \"low\": 100,\n                \"middle\": 1,\n                \"high\": 0\n            },\n            \"pressure\": 1030,\n            \"precipitation\": {\n                \"total\": 0,\n                \"type\": \"none\"\n            },\n            \"cape\": 1,\n            \"evaporation\": 0.21,\n            \"irradiance\": 214.3,\n            \"ozone\": 319,\n            \"humidity\": 65.0\n        },\n        {\n            \"date\": \"2015-09-07T15:00:00\",\n            \"weather\": \"overcast\",\n            \"icon\": 7,\n            \"temperature\": 16.7,\n            \"feels_like\": 15.0,\n            \"wind_chill\": 16.1,\n            \"soil_temperature\": 16.6,\n            \"dew_point\": 10.7,\n            \"surface_temperature\": 16.7,\n            \"wind\": {\n                \"speed\": 4.2,\n                \"gusts\": 8.1,\n                \"angle\": 12,\n                \"dir\": \"NNE\"\n            },\n            \"cloud_cover\": {\n                \"total\": 100,\n                \"low\": 100,\n                \"middle\": 0,\n                \"high\": 0\n            },\n            \"pressure\": 1030,\n            \"precipitation\": {\n                \"total\": 0,\n                \"type\": \"none\"\n            },\n            \"cape\": 0,\n            \"evaporation\": 0.18,\n            \"irradiance\": 175.1,\n            \"ozone\": 320,\n            \"humidity\": 67.0\n        },\n        {\n            \"date\": \"2015-09-07T16:00:00\",\n            \"weather\": \"overcast\",\n            \"icon\": 7,\n            \"temperature\": 16.3,\n            \"feels_like\": 14.8,\n            \"wind_chill\": 15.8,\n            \"soil_temperature\": 16.4,\n            \"dew_point\": 10.5,\n            \"surface_temperature\": 15.8,\n            \"wind\": {\n                \"speed\": 3.8,\n                \"gusts\": 8.0,\n                \"angle\": 14,\n                \"dir\": \"NNE\"\n            },\n            \"cloud_cover\": {\n                \"total\": 100,\n                \"low\": 100,\n                \"middle\": 0,\n                \"high\": 0\n            },\n            \"pressure\": 1030,\n            \"precipitation\": {\n                \"total\": 0,\n                \"type\": \"none\"\n            },\n            \"cape\": 0,\n            \"evaporation\": 0.12,\n            \"irradiance\": 123.2,\n            \"ozone\": 321,\n            \"humidity\": 68.0\n        },\n        {\n            \"date\": \"2015-09-07T17:00:00\",\n            \"weather\": \"overcast\",\n            \"icon\": 7,\n            \"temperature\": 15.9,\n            \"feels_like\": 14.5,\n            \"wind_chill\": 15.4,\n            \"soil_temperature\": 16.0,\n            \"dew_point\": 10.4,\n            \"surface_temperature\": 15.4,\n            \"wind\": {\n                \"speed\": 3.5,\n                \"gusts\": 6.8,\n                \"angle\": 18,\n                \"dir\": \"NNE\"\n            },\n            \"cloud_cover\": {\n                \"total\": 100,\n                \"low\": 100,\n                \"middle\": 0,\n                \"high\": 0\n            },\n            \"pressure\": 1030,\n            \"precipitation\": {\n                \"total\": 0,\n                \"type\": \"none\"\n            },\n            \"cape\": 2,\n            \"evaporation\": 0.08,\n            \"irradiance\": 69.6,\n            \"ozone\": 320,\n            \"humidity\": 70.0\n        },\n        {\n            \"date\": \"2015-09-07T18:00:00\",\n            \"weather\": \"overcast\",\n            \"icon\": 7,\n            \"temperature\": 15.4,\n            \"feels_like\": 14.3,\n            \"wind_chill\": 15.1,\n            \"soil_temperature\": 15.6,\n            \"dew_point\": 9.9,\n            \"surface_temperature\": 14.3,\n            \"wind\": {\n                \"speed\": 2.8,\n                \"gusts\": 5.1,\n                \"angle\": 21,\n                \"dir\": \"NNE\"\n            },\n            \"cloud_cover\": {\n                \"total\": 99,\n                \"low\": 99,\n                \"middle\": 0,\n                \"high\": 0\n            },\n            \"pressure\": 1030,\n            \"precipitation\": {\n                \"total\": 0,\n                \"type\": \"none\"\n            },\n            \"cape\": 5,\n            \"evaporation\": 0.02,\n            \"irradiance\": 3.1,\n            \"ozone\": 320,\n            \"humidity\": 69.0\n        },\n        {\n            \"date\": \"2015-09-07T19:00:00\",\n            \"weather\": \"overcast\",\n            \"icon\": 7,\n            \"temperature\": 14.5,\n            \"feels_like\": 13.5,\n            \"wind_chill\": 14.1,\n            \"soil_temperature\": 15.1,\n            \"dew_point\": 10.1,\n            \"surface_temperature\": 13.8,\n            \"wind\": {\n                \"speed\": 2.6,\n                \"gusts\": 5.0,\n                \"angle\": 21,\n                \"dir\": \"NNE\"\n            },\n            \"cloud_cover\": {\n                \"total\": 94,\n                \"low\": 94,\n                \"middle\": 0,\n                \"high\": 0\n            },\n            \"pressure\": 1031,\n            \"precipitation\": {\n                \"total\": 0,\n                \"type\": \"none\"\n            },\n            \"cape\": 6,\n            \"evaporation\": 0.01,\n            \"irradiance\": 0.0,\n            \"ozone\": 320,\n            \"humidity\": 74.0\n        },\n        {\n            \"date\": \"2015-09-07T20:00:00\",\n            \"weather\": \"mostly_cloudy\",\n            \"icon\": 5,\n            \"temperature\": 13.0,\n            \"feels_like\": 12.2,\n            \"wind_chill\": 12.3,\n            \"soil_temperature\": 14.1,\n            \"dew_point\": 10.1,\n            \"surface_temperature\": 13.3,\n            \"wind\": {\n                \"speed\": 2.6,\n                \"gusts\": 4.9,\n                \"angle\": 21,\n                \"dir\": \"NNE\"\n            },\n            \"cloud_cover\": {\n                \"total\": 79,\n                \"low\": 78,\n                \"middle\": 0,\n                \"high\": 4\n            },\n            \"pressure\": 1031,\n            \"precipitation\": {\n                \"total\": 0,\n                \"type\": \"none\"\n            },\n            \"cape\": 8,\n            \"evaporation\": 0.01,\n            \"irradiance\": 0.0,\n            \"ozone\": 320,\n            \"humidity\": 82.0\n        },\n        {\n            \"date\": \"2015-09-07T21:00:00\",\n            \"weather\": \"mostly_cloudy\",\n            \"icon\": 5,\n            \"temperature\": 12.4,\n            \"feels_like\": 11.6,\n            \"wind_chill\": 11.6,\n            \"soil_temperature\": 13.2,\n            \"dew_point\": 9.8,\n            \"surface_temperature\": 12.9,\n            \"wind\": {\n                \"speed\": 2.6,\n                \"gusts\": 4.4,\n                \"angle\": 22,\n                \"dir\": \"NNE\"\n            },\n            \"cloud_cover\": {\n                \"total\": 76,\n                \"low\": 74,\n                \"middle\": 0,\n                \"high\": 14\n            },\n            \"pressure\": 1031,\n            \"precipitation\": {\n                \"total\": 0,\n                \"type\": \"none\"\n            },\n            \"cape\": 8,\n            \"evaporation\": 0.01,\n            \"irradiance\": 0.0,\n            \"ozone\": 321,\n            \"humidity\": 84.0\n        },\n        {\n            \"date\": \"2015-09-07T22:00:00\",\n            \"weather\": \"mostly_cloudy\",\n            \"icon\": 5,\n            \"temperature\": 11.3,\n            \"feels_like\": 10.7,\n            \"wind_chill\": 10.4,\n            \"soil_temperature\": 12.3,\n            \"dew_point\": 9.1,\n            \"surface_temperature\": 12.0,\n            \"wind\": {\n                \"speed\": 2.3,\n                \"gusts\": 4.3,\n                \"angle\": 26,\n                \"dir\": \"NNE\"\n            },\n            \"cloud_cover\": {\n                \"total\": 61,\n                \"low\": 47,\n                \"middle\": 0,\n                \"high\": 21\n            },\n            \"pressure\": 1031,\n            \"precipitation\": {\n                \"total\": 0,\n                \"type\": \"none\"\n            },\n            \"cape\": 0,\n            \"evaporation\": 0.0,\n            \"irradiance\": 0.0,\n            \"ozone\": 320,\n            \"humidity\": 86.0\n        },\n        {\n            \"date\": \"2015-09-07T23:00:00\",\n            \"weather\": \"partly_sunny\",\n            \"icon\": 4,\n            \"temperature\": 10.5,\n            \"feels_like\": 10.2,\n            \"wind_chill\": 9.6,\n            \"soil_temperature\": 12.0,\n            \"dew_point\": 9.1,\n            \"surface_temperature\": 11.4,\n            \"wind\": {\n                \"speed\": 2.3,\n                \"gusts\": 3.7,\n                \"angle\": 33,\n                \"dir\": \"NNE\"\n            },\n            \"cloud_cover\": {\n                \"total\": 44,\n                \"low\": 42,\n                \"middle\": 0,\n                \"high\": 3\n            },\n            \"pressure\": 1031,\n            \"precipitation\": {\n                \"total\": 0,\n                \"type\": \"none\"\n            },\n            \"cape\": 0,\n            \"evaporation\": 0.0,\n            \"irradiance\": 0.0,\n            \"ozone\": 322,\n            \"humidity\": 90.0\n        }\n    ]\n}"
+				}
+			]
+		}
+	],
+	"auth": {
+		"type": "apikey",
+		"apikey": [
+			{
+				"key": "value",
+				"value": "janKostecky123",
+				"type": "string"
+			},
+			{
+				"key": "key",
+				"value": "key",
+				"type": "string"
+			},
+			{
+				"key": "in",
+				"value": "query",
+				"type": "string"
+			}
+		]
+	},
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "tier",
+			"value": "flexi",
+			"type": "string"
+		}
+	]
+}
