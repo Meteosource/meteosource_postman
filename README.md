@@ -1,6 +1,6 @@
 # Meteosource.com - Weather API Postman Collection
 
-This document provides basic guide on how to use Meteosource.com Weather API Postman Collection to fetch weather data of your needs.
+This document provides basic guide on how to use [Meteosource weather API](https://www.meteosource.com) Postman Collection to fetch weather data of your needs.
 
 
 ## Get started
@@ -29,4 +29,6 @@ Meteosource provides API for historic, current, and forecast weather data. Weath
 * historical weather data for up to 8 years in the past
 * png map layers
 
-For more information about Meteosource.com API take a look at the [official documentation](https://www.meteosource.com/documentation)
+For more information about Meteosource.com API take a look at the [official documentation](https://www.meteosource.com/documentation). 
+
+You can contact us [here](https://www.meteosource.com/contact).
